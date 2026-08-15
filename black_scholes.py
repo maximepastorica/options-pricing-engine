@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm
+from utils import compute_d1_d2, validate_inputs
 
 def black_scholes(
     S: float,
@@ -39,11 +40,9 @@ def black_scholes(
         If S, K, T, or sigma is not positive, or if option_type
         is neither "call" nor "put".
     """
-    if S <= 0 or K <= 0 or T <= 0  or sigma <= 0:
-        raise ValueError("Parameters S, K, T and sigma must be positive")
+    validate_inputs(S, K, T, r, sigma, option_type)
     
-    d1 = (np.log(S/K) + (r + 0.5*sigma**2)*T)/(sigma*np.sqrt(T))
-    d2 = d1 - sigma*np.sqrt(T)
+    d1, d2 = compute_d1_d2(S, K, T, r, sigma)
 
     if option_type == "call":
         C = S*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
@@ -51,5 +50,3 @@ def black_scholes(
     elif option_type == "put":
         P = K*np.exp(-r*T)*norm.cdf(-d2) - S*norm.cdf(-d1)
         return P
-    else:
-        raise ValueError("option_type must be a 'call' or 'put'")
