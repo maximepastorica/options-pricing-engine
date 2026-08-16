@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm
-from utils import compute_d1_d2, validate_inputs
+from utils import compute_d1_d2, validate_model_inputs, validate_option_type
 
 def black_scholes(
     S: float,
@@ -40,7 +40,8 @@ def black_scholes(
         If S, K, T, or sigma is not positive, or if option_type
         is neither "call" nor "put".
     """
-    validate_inputs(S, K, T, r, sigma, option_type)
+    validate_model_inputs(S, K, T, r, sigma)
+    validate_option_type(option_type)
     
     d1, d2 = compute_d1_d2(S, K, T, r, sigma)
 

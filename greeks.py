@@ -1,6 +1,7 @@
-from utils import compute_d1_d2, validate_inputs
+from utils import compute_d1_d2, validate_model_inputs, validate_option_type
 from scipy.stats import norm
 from collections.abc import Callable
+import numpy as np
 
 def black_scholes_delta(
     S: float,
@@ -42,7 +43,8 @@ def black_scholes_delta(
         is neither "call" nor "put".
     """
 
-    validate_inputs(S, K, T, r, sigma, option_type)
+    validate_model_inputs(S, K, T, r, sigma)
+    validate_option_type(option_type)
 
     d1, _ = compute_d1_d2(S, K, T, r, sigma)
     if option_type == "call":
@@ -105,5 +107,33 @@ def numerical_delta(
     
     return ( pricing_function(S + h, K, T, r, sigma, option_type) - pricing_function(S - h, K, T, r, sigma, option_type) ) / ( 2*h )
 
+def black_scholes_gamma(
+        S: float,
+        K: float,
+        T: float,
+        r: float,
+        sigma: float,
+    ) -> float:
+
+    validate_model_inputs(S, K, T, r, sigma)
+    d1, _ = compute_d1_d2(S, K, T, r, sigma)
+
+    return norm.pdf(d1) / (S*sigma*np.sqrt(T))
+
+def numerical_gamma(
+        pricing_function: Callable[[float, float, float, float, float, str], float],
+            S: float,
+            K: float,
+            T: float,
+            r: float,
+            sigma: float,
+            option_type: str,
+            h: float
+) -> float:
+
+    if h <= 0 or h >= S:
+        raise ValueError("Step size h must be positive and smaller than S")
+
+    return ((pricing_function(S + h, K, T, r, sigma, option_type) - 2*pricing_function(S, K, T, r, sigma, option_type) + pricing_function(S - h, K, T, r, sigma, option_type)) / h**2)
     
         
